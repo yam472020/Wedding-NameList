@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>朱家&陳家 宴客名單</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <script src="bootstrap.bundle.min.js">
+    </script>
+
+    <style>
+        /* 隱藏原本的radio按鈕 */
+        input[type="radio"] {
+            display: none;
+        }
+
+        /* 樣式化自訂的按鈕外觀 */
+        .custom-radio-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        /* 修改被選中時的樣式 */
+        .custom-radio-button.checked {
+            background-color: #e74c3c;
+        }
+
+        .content {
+            font-size: 28px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-3">
+        <div class="row text-center">
+            <div class="col-12">
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option1" value="option1" onchange="setRadio(this)"> 朱家親戚
+                </label>
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option2" value="option2" onchange="setRadio(this)"> 陳家親戚
+                </label>
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option3" value="option3" onchange="setRadio(this)"> 男方朋友
+                </label>
+                <!-- <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option4" value="option4" onchange="setRadio(this)"> 女方朋友
+                </label>
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option5" value="option5" onchange="setRadio(this)"> 薦善堂
+                </label>
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option6" value="option6" onchange="setRadio(this)"> 鄰友
+                </label> -->
+                <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option7" value="None" onchange="setRadio(this)"> 無分類
+                </label>
+                <!-- <label class="custom-radio-button">
+                    <input type="radio" name="options" id="option8" value="option8" onchange="setRadio(this)"> 選項 8
+                </label> -->
+                <hr>
+            </div>
+            <div class="col-12">
+                <div class="input-group-lg">
+                    <input type="text" class="form-control" id="searchInput" oninput="search()" placeholder="輸入姓名">
+                </div>
+                <hr>
+            </div>
+        </div>
+        <div class="content" id="searchResults"></div>
+
+    </div>
+
+    <script src="index.js"></script>
+    <script>
+        let selectedValue; // 定義全局變量
+
+        // 使用 Fetch API 獲取 JSON 文件
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                // 將數據保存在全局變量中
+                jsonData = data;
+            })
+            .catch(error => console.error('Error fetching JSON:', error));
+
+        // JavaScript 函數，用於設置選中的單選按鈕樣式並取得值
+        function setRadio(element) {
+            // 清除所有按鈕的選中樣式
+            document.querySelectorAll('.custom-radio-button').forEach(function (button) {
+                button.classList.remove('checked');
+            });
+
+            // 設置選中按鈕的樣式
+            var selectedButton = element.parentNode;
+            selectedButton.classList.add('checked');
+
+            // 取得選中按鈕的值
+            selectedValue = element.value;
+            console.log(selectedValue); // 這裡你可以使用取得的值進行其他操作
+
+            // 清空搜尋框的內容
+            document.getElementById("searchInput").value = '';
+
+            // 顯示所有該按鈕的人員
+            if (selectedValue === 'None') {
+                const allNames = Object.values(jsonData).flatMap(names => Object.keys(names));
+                displayResults(allNames);
+            } else {
+                displayResults(Object.keys(jsonData[selectedValue] || {}));
+            }
+        }
+
+        // 實時搜尋的功能
+        function search() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            let results = [];
+
+            // 如果有選中部門按鈕，僅搜尋該部門的人員
+            const selectedButton = document.querySelector('.custom-radio-button.checked');
+            if (selectedButton) {
+                if (selectedValue === 'None') {
+                    // 如果選中 "無"，則搜尋所有部門的人員
+                    const allNames = Object.values(jsonData).flatMap(names => Object.keys(names));
+                    results = allNames.filter(name =>
+                        name.toLowerCase().includes(searchInput)
+                    );
+                } else {
+                    // 如果選中了部門按鈕，僅搜尋該部門的人員
+                    results = Object.keys(jsonData[selectedValue] || {}).filter(name =>
+                        name.toLowerCase().includes(searchInput)
+                    );
+                }
+            } else {
+                // 如果沒有選中部門按鈕，搜尋所有部門的人員
+                Object.values(jsonData).forEach(names => {
+                    results = results.concat(Object.keys(names));
+                });
+                results = results.filter(name =>
+                    name.toLowerCase().includes(searchInput)
+                );
+            }
+
+            displayResults(results);
+        }
+
+        // 顯示搜尋結果的函數
+        function displayResults(results) {
+            const resultsContainer = document.getElementById("searchResults");
+            resultsContainer.innerHTML = "";
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = "無匹配結果。";
+            } else {
+                results.forEach(person => {
+                    const resultDiv = document.createElement("div");
+                    if (selectedValue === 'None') {
+                        // 如果選擇 "None"，顯示所有部門的結果
+                        Object.keys(jsonData).forEach(department => {
+                            const seat = jsonData[department][person];
+                            if (seat) {
+                                resultDiv.innerHTML +=
+                                    `<span class="text-danger">${seat}</span> - ${person}<br>`;
+                            }
+                        });
+                        resultsContainer.appendChild(resultDiv);
+                    } else {
+                        // 如果選中了部門按鈕，僅顯示該部門的結果
+                        const seat = jsonData[selectedValue][person];
+                        if (seat) {
+                            resultDiv.innerHTML = `<span class="text-danger">${seat}</span> - ${person}`;
+                            resultsContainer.appendChild(resultDiv);
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,5 @@
+{
+    "option1": {"John Doe":"c1", "Jane Smith":"B1", "Alice Johnson":"A1"},
+    "option2": {"Bob Johnson":"D1", "Charlie Brown":"E1", "David Smith":"F1"},
+    "option3": {"Eva Miller":"G1", "Frank White":"H1", "Grace Davis":"I1"}
+}
