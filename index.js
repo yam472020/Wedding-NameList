@@ -111,7 +111,7 @@ function displayResults(results) {
     //自動選取唯一筆的名子
     if (results.length == 1) {
         //取消聚焦
-        document.activeElement.blur()
+        document.body.focus()
         autoclick()
     } else {
         // 初始化樣式
